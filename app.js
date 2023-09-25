@@ -1,24 +1,25 @@
-const targetDate = "2022-09-27T19:12:13";
+const targetDate = new Date();
+targetDate.setHours(targetDate.getHours() +1);
 
 function getTimeSegmentElements(segmentElement) {
-  const segmentDisplay = segmentElement.querySelector(".segment-display");
-
+  const segmentDisplay = segmentElement.querySelector(
+    '.segment-display'
+  );
   const segmentDisplayTop = segmentDisplay.querySelector(
-    ".segment-display_top"
+    '.segment-display__top'
   );
-
   const segmentDisplayBottom = segmentDisplay.querySelector(
-    ".segment-display_bottom"
+    '.segment-display__bottom'
   );
 
-  const segmentOverlay = segmentDisplay.querySelector(".segment-overlay");
-
-  const segmentOverlayTop = segmentDisplay.querySelector(
-    ".segment-overlay_top"
+  const segmentOverlay = segmentDisplay.querySelector(
+    '.segment-overlay'
   );
-
-  const segmentOverlayBottom = segmentDisplay.querySelector(
-    ".segment-overlay_bottom"
+  const segmentOverlayTop = segmentOverlay.querySelector(
+    '.segment-overlay__top'
+  );
+  const segmentOverlayBottom = segmentOverlay.querySelector(
+    '.segment-overlay__bottom'
   );
 
   return {
@@ -30,89 +31,114 @@ function getTimeSegmentElements(segmentElement) {
   };
 }
 
-function updateSegmentValues(displayElement, overlayElement, value) {
+function updateSegmentValues(
+  displayElement,
+  overlayElement,
+  value
+) {
   displayElement.textContent = value;
   overlayElement.textContent = value;
 }
+
 function updateTimeSegment(segmentElement, timeValue) {
-  const segmentElements = getTimeSegmentElements(segmentElement);
+  const segmentElements =
+    getTimeSegmentElements(segmentElement);
+
+  if (
+    parseInt(
+      segmentElements.segmentDisplayTop.textContent,
+      10
+    ) === timeValue
+  ) {
+    return;
+  }
+
   segmentElements.segmentOverlay.classList.add('flip');
 
   updateSegmentValues(
     segmentElements.segmentDisplayTop,
-    segmentElements.segmentDisplayBottom,
+    segmentElements.segmentOverlayBottom,
     timeValue
   );
 
   function finishAnimation() {
     segmentElements.segmentOverlay.classList.remove('flip');
-
     updateSegmentValues(
       segmentElements.segmentDisplayBottom,
-      segmentElements.segmentDisplayTop,
+      segmentElements.segmentOverlayTop,
       timeValue
     );
-    this.removeEventListener("animationend", finishAnimation);
+
+    this.removeEventListener(
+      'animationend',
+      finishAnimation
+    );
   }
-  segmentElements.segmentOverlay.addEventListener("animationend");
+
+  segmentElements.segmentOverlay.addEventListener(
+    'animationend',
+    finishAnimation
+  );
 }
-function updateTimeSection(sectionID,timeValue){
-    const firstNumber=Math.floor(timeValue/10);
-    const secondNumber=timeValue%10;
 
-    const sectionElement=document.getElementById(sectionID);
-    const timeSegments=
-     sectionElement.querySelectorAll('.time-segment')
+function updateTimeSection(sectionID, timeValue) {
+  const firstNumber = Math.floor(timeValue / 10) || 0;
+  const secondNumber = timeValue % 10 || 0;
+  const sectionElement = document.getElementById(sectionID);
+  const timeSegments =
+    sectionElement.querySelectorAll('.time-segment');
 
-     updateTimeSegment(timeSegments[0],firstNumber)
-     updateTimeSegment(timeSegments[1],secondNumber)
-
+  updateTimeSegment(timeSegments[0], firstNumber);
+  updateTimeSegment(timeSegments[1], secondNumber);
 }
-function getTimeRemaining(targetDateTime)
-{
-    const nowTime=Date.now()
-    const secondsRemaining=Math.floor(targetDateTime-nowTime)/1000
 
-    const complete =nowTime =>targetDateTime;
-    if(complete){
-        return{
-            complete,
-             seconds:0,
-            minutes:0,
-            hours:0,
-        };
-    }
-      
-    const hours=Math.floor(secondsRemaining / 60 / 60)
-    const minutes=Math.floor(secondsRemaining / 60 )-hours * 60
-    const seconds=(secondsRemaining % 60)
+function getTimeRemaining(targetDateTime) {
+  const nowTime = Date.now();
+  const complete = nowTime >= targetDateTime;
 
-    return{
-        complete,
-        seconds,
-        minutes,
-        hours
+  if (complete) {
+    return {
+      complete,
+      seconds: 0,
+      minutes: 0,
+      hours: 0,
     };
+  }
+
+  const secondsRemaining = Math.floor(
+    (targetDateTime - nowTime) / 1000
+  );
+  const hours = Math.floor(secondsRemaining / 60 / 60);
+  const minutes =
+    Math.floor(secondsRemaining / 60) - hours * 60;
+  const seconds = secondsRemaining % 60;
+
+  return {
+    complete,
+    seconds,
+    minutes,
+    hours,
+  };
 }
 
-    function updateAllSegments()
-    {
-        const targetTimeStamp = new Date(targetDate.getTime());
-        const getTimeRemainingBits = getTimeRemaining(targetTimeStamp)
+function updateAllSegments() {
+  const timeRemainingBits = getTimeRemaining(
+    new Date(targetDate).getTime()
+  );
 
-        updateTimeSection('seconds',getTimeRemainingBits.seconds)
-        updateTimeSection('minutes',getTimeRemainingBits.minutes)
-        updateTimeSection('hours',getTimeRemainingBits.hours)
-        
-        return getTimeRemainingBits.complete
+  updateTimeSection('seconds', timeRemainingBits.seconds);
+  updateTimeSection('minutes', timeRemainingBits.minutes);
+  updateTimeSection('hours', timeRemainingBits.hours);
 
-    }
-    const countDownTImer =setInterval(()=>{
-       const isComplete= updateAllSegments();
-       if(isComplete){
-        clearInterval(countDownTImer);
-       }
-    },1000);
+  return timeRemainingBits.complete;
+}
 
+const countdownTimer = setInterval(() => {
+  const isComplete = updateAllSegments();
 
-  updateAllSegments()
+  if (isComplete) {
+    clearInterval(countdownTimer);
+  }
+}, 1000);
+
+updateAllSegments();
