@@ -2,7 +2,7 @@
 
 Welcome to the Timer project – a sleek and straightforward timer web application. This project is built using HTML, CSS, JavaScript, and Tailwind CSS for a modern and responsive design. The timer sets the countdown according to the users need through an API, providing accurate and real-time updates to the users. The central feature of this timer is its countdown functionality, presented in a clear and minimalist style.
 
-###Deployed Link
+### Deployed Link
 https://yadavharsh01.github.io/Timer/
 
 ## Tech Stack
